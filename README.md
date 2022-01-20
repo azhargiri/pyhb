@@ -69,8 +69,8 @@ After installation, installing the sound packs is recommended
   - Start by cloning the repository, `git clone https://github.com/blankRiot96/pyhb.git`
   - Change into the directory `cd pyhb`
   - We recommend using `pipenv` to install the dependencies 
-  - `pip install pipenv`
   - `pipenv shell`
+  - `pipenv install -r requirements.txt`
   - Now you should have all the packages installed into the new virtual environment you have created
   - Now, you can build the `.whl` file with `python setup.py sdist bdist_wheel`
   - Or, just run `pyhb` with `python -m pyhb`
