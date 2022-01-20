@@ -72,7 +72,7 @@ After installation, installing the sound packs is recommended
   - `pipenv shell`
   - `pipenv install -r requirements.txt`
   - Now you should have all the packages installed into the new virtual environment you have created
-  - Now, you can build the `.whl` file with `python setup.py sdist bdist_wheel`
+  - Now, you can build the `.whl` file with `python -m build`
   - Or, just run `pyhb` with `python -m pyhb`
 
 
