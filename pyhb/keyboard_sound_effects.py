@@ -1,9 +1,9 @@
 import click
-import keyboard
 import os
 import random
 from colorama import Fore
 from pyhb.utils import output
+from pyhb.listener import XorgListener
 
 # Ignore the pygame welcome message
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
@@ -58,30 +58,58 @@ def main(sound_pack: str) -> None:
     conf_keys = list(config["defines"].keys())
 
     session = {}
-    while True:
-        key_pressed = keyboard.read_key()
-        if key_pressed in conf_vals:
-            index = conf_vals.index(key_pressed)
-            key = conf_keys[index]
+
+    kuping = Kuping(session, conf_vals, conf_keys, sound_pack, user_path)
+
+    with XorgListener(on_press=kuping.on_press, on_release=kuping.on_release) as listener:
+        listener.join()
+
+class Kuping:
+    def __init__(self, session, conf_vals, conf_keys, sound_pack, user_path):
+        self.session = session
+        self.conf_vals = conf_vals
+        self.conf_keys = conf_keys
+        self.sound_pack = sound_pack
+        self.user_path = user_path
+
+    def on_press(self, key, event = None):
+        if key in self.conf_vals:
+            index = self.conf_vals.index(key)
+            key = self.conf_keys[index]
         else:
-            if key_pressed not in session:
-                value = random.choice(conf_vals)
-                session[key_pressed] = value
+            if key not in self.session:
+                value = random.choice(self.conf_vals)
+                self.session[key] = value
 
-            key_pressed = session[key_pressed]
-            index = conf_vals.index(key_pressed)
-            key = conf_keys[index]
+            key = self.session[key]
+            index = self.conf_vals.index(key)
+            key = self.conf_keys[index]
 
-        if RELEASED:
-            if sound_pack == "nk-cream":
+    def on_release(self, key, event = None):
+        keycode = event.detail
+
+        if self.sound_pack == "nk-cream":
+            try:
                 sound = pygame.mixer.Sound(
-                    f"{user_path}/Soundpacks/{sound_pack}/{key_pressed}.wav"
+                    f"{self.user_path}/Soundpacks/{self.sound_pack}/{keycode}.wav"
                 )
-            else:
+            except FileNotFoundError:
                 sound = pygame.mixer.Sound(
-                    f"{user_path}/Soundpacks/{sound_pack}/{key}.ogg"
+                    f"{self.user_path}/Soundpacks/{self.sound_pack}/sound.wav"
                 )
-            sound.play()
-            RELEASED = False
+        else:
+            try:
+                sound = pygame.mixer.Sound(
+                    f"{self.user_path}/Soundpacks/{self.sound_pack}/{keycode}.ogg"
+                )
+            except FileNotFoundError:
+                sound = pygame.mixer.Sound(
+                    f"{self.user_path}/Soundpacks/{self.sound_pack}/sound.ogg"
+                )
 
-        keyboard.on_release(set_release)
+        sound.play()
+
+        global RELEASED
+        RELEASED = False
+
+        set_release()
