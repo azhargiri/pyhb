@@ -50,7 +50,6 @@ def main(sound_pack: str) -> None:
         output(Fore.YELLOW, 'Have you tried installing them first? `pyhb install-soundpacks`')
         exit()
 
-    global RELEASED
     click.echo(f"pyhb has started playing {sound_pack}...")
     click.echo("Use <ctrl + c> to close")
 
@@ -71,22 +70,41 @@ class Kuping:
         self.conf_keys = conf_keys
         self.sound_pack = sound_pack
         self.user_path = user_path
+        self.released = True
 
     def on_press(self, key, event = None):
-        if key in self.conf_vals:
-            index = self.conf_vals.index(key)
-            key = self.conf_keys[index]
-        else:
-            if key not in self.session:
-                value = random.choice(self.conf_vals)
-                self.session[key] = value
+        # keycode = self.lookup_keycode(key)
+        keycode = event.detail
 
-            key = self.session[key]
-            index = self.conf_vals.index(key)
-            key = self.conf_keys[index]
+        if self.released == True:
+            if self.sound_pack == "nk-cream":
+                try:
+                    sound = pygame.mixer.Sound(
+                        f"{self.user_path}/Soundpacks/{self.sound_pack}/{keycode}.wav"
+                    )
+                except FileNotFoundError:
+                    sound = pygame.mixer.Sound(
+                        f"{self.user_path}/Soundpacks/{self.sound_pack}/sound.wav"
+                    )
+            else:
+                try:
+                    sound = pygame.mixer.Sound(
+                        f"{self.user_path}/Soundpacks/{self.sound_pack}/{keycode}.ogg"
+                    )
+                except FileNotFoundError:
+                    sound = pygame.mixer.Sound(
+                        f"{self.user_path}/Soundpacks/{self.sound_pack}/sound.ogg"
+                    )
+
+            sound.play()
+
+        self.released = False
 
     def on_release(self, key, event = None):
+        # keycode = self.lookup_keycode(key)
         keycode = event.detail
+
+        self.released = True
 
         if self.sound_pack == "nk-cream":
             try:
@@ -107,9 +125,22 @@ class Kuping:
                     f"{self.user_path}/Soundpacks/{self.sound_pack}/sound.ogg"
                 )
 
+        sound.set_volume(0.3)
         sound.play()
 
-        global RELEASED
-        RELEASED = False
+        # self.released = True
 
-        set_release()
+    def lookup_keycode(self, key):
+        if key in self.conf_vals:
+            index = self.conf_vals.index(key)
+            xkey = self.conf_keys[index]
+        else:
+            if key not in self.session:
+                value = random.choice(self.conf_vals)
+                self.session[key] = value
+
+            key = self.session[key]
+            index = self.conf_vals.index(key)
+            xkey = self.conf_keys[index]
+
+        return xkey
